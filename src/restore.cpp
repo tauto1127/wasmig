@@ -15,9 +15,14 @@ void restore_dirty_memory(uint8_t *memory, FILE* memory_fp) {
 }
 
 Array8 wasmig_restore_memory() {
+    return wasmig_restore_memory_with_prefix(NULL);
+}
+
+Array8 wasmig_restore_memory_with_prefix(const char *file_prefix) {
     // FILE *mem_fp = open_image("memory.img", "wb");
-    FILE* memory_fp = open_image("memory.img", "rb");
-    FILE* mem_size_fp = open_image("mem_page_count.img", "rb");
+    FILE* memory_fp = open_image_with_prefix("memory.img", "rb", file_prefix);
+    FILE* mem_size_fp =
+        open_image_with_prefix("mem_page_count.img", "rb", file_prefix);
 
     // check file pointers
     if (!memory_fp || !mem_size_fp) {
@@ -67,11 +72,17 @@ Array8 wasmig_restore_memory() {
     fclose(memory_fp);
     fclose(mem_size_fp);
 
-    return (Array8){.size = total_size, .contents = memory};
+    return (Array8){.size = static_cast<uint32_t>(total_size),
+                    .contents = memory};
 }
 
 CodePos wasmig_restore_pc() {
-    FILE *fp = open_image("program_counter.img", "rb");
+    return wasmig_restore_pc_with_prefix(NULL);
+}
+
+CodePos wasmig_restore_pc_with_prefix(const char *file_prefix) {
+    FILE *fp =
+        open_image_with_prefix("program_counter.img", "rb", file_prefix);
     if (fp == NULL) {
         spdlog::error("failed to open program counter file");
         return {0, 0};
@@ -84,7 +95,12 @@ CodePos wasmig_restore_pc() {
 }
 
 Array64 wasmig_restore_global(Array8 types) {
-    FILE *fp = open_image("global.img", "rb");
+    return wasmig_restore_global_with_prefix(types, NULL);
+}
+
+Array64 wasmig_restore_global_with_prefix(Array8 types,
+                                          const char *file_prefix) {
+    FILE *fp = open_image_with_prefix("global.img", "rb", file_prefix);
     if (fp == NULL) {
         spdlog::error("failed to open global file");
         return {0, NULL};
@@ -101,7 +117,11 @@ Array64 wasmig_restore_global(Array8 types) {
 }
 
 TypedArray wasmig_restore_global_v2() {
-    FILE *fp = open_image("global.img", "rb");
+    return wasmig_restore_global_v2_with_prefix(NULL);
+}
+
+TypedArray wasmig_restore_global_v2_with_prefix(const char *file_prefix) {
+    FILE *fp = open_image_with_prefix("global.img", "rb", file_prefix);
     if (fp == NULL) {
         spdlog::error("failed to open global img file");
         return {0, NULL};
@@ -123,7 +143,11 @@ TypedArray wasmig_restore_global_v2() {
 }
 
 CallStack wasmig_restore_stack() {
-    FILE *fp = open_image("call_stack.img", "rb");
+    return wasmig_restore_stack_with_prefix(NULL);
+}
+
+CallStack wasmig_restore_stack_with_prefix(const char *file_prefix) {
+    FILE *fp = open_image_with_prefix("call_stack.img", "rb", file_prefix);
     if (fp == NULL) {
         spdlog::error("failed to open call stack file");
         return {0, NULL};
